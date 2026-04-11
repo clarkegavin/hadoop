@@ -6,7 +6,6 @@ current_count = 0
 
 for line in sys.stdin:
     word, count = line.strip().split('\t')
-
     try:
         count = int(count)
     except ValueError:
