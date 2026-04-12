@@ -7,17 +7,23 @@ values = []
 def process(key, values):
     has_direct = False
     mutual_friends = []
+    location = 'unknown'  # default location if not found
 
     for value in values:
-        tag, user_id  = value.split(',')
+        parts = value.split(',')
+        #tag, user_id  = value.split(',')
+        tag = parts[0].strip()
+        user_id = parts[1].strip()
         if tag == "direct":
             has_direct = True
         elif tag == "mutual":
             mutual_friends.append(int(user_id))
 
-    # if there is no direct friendship, output the key and the number of mutual friends
-    if not has_direct:
-        print(f"{key}\t{len(mutual_friends)}")
+        if len(parts) > 2:
+            location = parts[2].strip()  # update location if provided
+
+    is_direct_flag = 1 if has_direct else 0
+    print(f"{key}\t{len(mutual_friends)},{is_direct_flag},{location}")
 
 for line in sys.stdin:
     key, value = line.strip().split('\t')
