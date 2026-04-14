@@ -29,14 +29,19 @@ for line in sys.stdin:
         # connect_date = friend.split(':')[2]  # connect_date is currently not used, but can be included in the output if needed
         # friend_ids.append(friend_id)
 
+    # Emit User Location
+    print(f"{user_id}\tUser_Location,{location}")
+
     # Direct friendships
     for friend_id, weight, connect_date in friend_data:
-        key = tuple(sorted((user_id, friend_id)))
+        # key = tuple(sorted((user_id, friend_id)))
+        key =  tuple((user_id, friend_id))
         value = ("direct", None)
         print(f"{key[0]},{key[1]}\tdirect,0,{location},{weight},{connect_date}")
 
     # Mutual friendships
-    for (friend1, weight, connect_date), (friend2, weight, connect_date)  in combinations(friend_data, 2):
+    for (friend1, w1,d1), (friend2, w2, d2)  in combinations(friend_data, 2):
         key = tuple(sorted((friend1, friend2)))
         value = ("mutual", user_id)  # user_id is the mutual friend
-        print(f"{key[0]},{key[1]}\tmutual,{user_id},{location},{weight},{connect_date}")
+        #print(f"{key[0]},{key[1]}\tmutual,{user_id},{location},{weight},{connect_date}")
+        print(f"{key[0]},{key[1]}\tmutual,{user_id},unknown,{weight},{connect_date}")

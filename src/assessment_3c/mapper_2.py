@@ -10,6 +10,11 @@ CONNECTED_THIS_YEAR_ONLY = os.environ.get('connected_this_year_only', 'false').l
 for line in sys.stdin:
 
     pair, data = line.strip().split("\t")
+
+    if data.startswith("User_Location"):
+        print(line)  # Emit user location records as is for later processing
+        continue
+
     #having some issues with spaces so stripping them just in case
     count_str, is_direct_str, location, weight, connected_date = [x.strip() for x in data.split(',')]
     count = int(count_str)
