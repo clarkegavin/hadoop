@@ -16,11 +16,14 @@ for line in sys.stdin:
         continue
 
     #having some issues with spaces so stripping them just in case
-    count_str, is_direct_str, location, weight, connected_date = [x.strip() for x in data.split(',')]
+    #count_str, is_direct_str, location, weight, connected_date = [x.strip() for x in data.split(',')]
+    count_str, is_direct_str, weight, connected_date = [x.strip() for x in data.split(',')]
     count = int(count_str)
     is_direct = int(is_direct_str)
 
     user, recommended_friend = [x.strip() for x in pair.split(',')]
 
-    print(f"{user}\t{recommended_friend},{count},{is_direct},{location},{weight},{connected_date}")
-    print(f"{recommended_friend}\t{user},{count},{is_direct},{location},{weight},{connected_date}")
+    # print(f"{user}\t{recommended_friend},{count},{is_direct},{location},{weight},{connected_date}")
+    # print(f"{recommended_friend}\t{user},{count},{is_direct},{location},{weight},{connected_date}")
+    print(f"{user}\t{recommended_friend},{count},{is_direct},{weight},{connected_date}")
+    print(f"{recommended_friend}\t{user},{count},{is_direct},{weight},{connected_date}")

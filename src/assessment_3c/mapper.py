@@ -24,24 +24,24 @@ for line in sys.stdin:
             # Handle cases where the friend data is not in the expected format
             continue
 
-        # friend_id = int(friend.split(':')[0])
-        # weight = int(friend.split(':')[1])  # weight is currently not used, but can be included in the output if needed
-        # connect_date = friend.split(':')[2]  # connect_date is currently not used, but can be included in the output if needed
-        # friend_ids.append(friend_id)
-
     # Emit User Location
     print(f"{user_id}\tUser_Location,{location}")
 
     # Direct friendships
     for friend_id, weight, connect_date in friend_data:
-        # key = tuple(sorted((user_id, friend_id)))
         key =  tuple((user_id, friend_id))
-        value = ("direct", None)
-        print(f"{key[0]},{key[1]}\tdirect,0,{location},{weight},{connect_date}")
+        #value = ("direct", None)
+        #print(f"{key[0]},{key[1]}\tdirect,0,{location},{weight},{connect_date}")
+        print(f"{key[0]},{key[1]}\tdirect,0,{weight},{connect_date}")
 
     # Mutual friendships
     for (friend1, w1,d1), (friend2, w2, d2)  in combinations(friend_data, 2):
         key = tuple(sorted((friend1, friend2)))
-        value = ("mutual", user_id)  # user_id is the mutual friend
-        #print(f"{key[0]},{key[1]}\tmutual,{user_id},{location},{weight},{connect_date}")
-        print(f"{key[0]},{key[1]}\tmutual,{user_id},unknown,{weight},{connect_date}")
+        #value = ("mutual", user_id)  # user_id is the mutual friend
+        #print(f"{key[0]},{key[1]}\tmutual,{user_id},unknown,{weight},{connect_date}")
+        #print(f"{key[0]},{key[1]}\tmutual,{user_id},{weight},{connect_date}")
+        # use the weight of the mutual friend that is connected to the user_id as the weight for the mutual friendship
+        bridge_weight = w1 if friend1 == user_id else w2
+        bridge_date = d1 if friend1 == user_id else d2
+
+        print(f"{key[0]},{key[1]}\tmutual,{user_id},{bridge_weight},{bridge_date}")

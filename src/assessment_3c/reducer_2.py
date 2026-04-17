@@ -11,42 +11,50 @@ CONNECTED_THIS_YEAR_ONLY = os.environ.get('connected_this_year_only', 'false').l
 
 current_key = None
 values = []
-user_locations = {}  # to store user locations for same_location_only filtering
+user_locations = {}
 
 def process(key, values):
     recommendations = []
-    user_location = None
-
 
     print(f"DEBUG: Processing user {key} | sort_by_weight={SORT_BY_WEIGHT} | total records={len(values)}",
           file=sys.stderr)
 
     for value in values:
         parts = [x.strip() for x in value.split(',')]
+        if len(parts) < 2:
+            print(f"DEBUG: XXX - Skipping malformed record for user {key}: {value}", file=sys.stderr)
+            continue  # Skip malformed records
 
         if parts[0] == "User_Location":
             user_locations[key] = parts[1]  # Store user location for later use
+            print(f"DEBUG: Found location for user {key}: {user_locations[key]}", file=sys.stderr)
+
+    print(f"DEBUG: Known locations after collection: {user_locations}", file=sys.stderr)
 
     for value in values:
-        # having some issues with spaces, so stripping them just in case
+        # stripping spaces
         parts = [x.strip() for x in value.split(',')]
+
+        if len(parts) < 5:
+            print(f"DEBUG: Skipping malformed record for user {key}: {value}", file=sys.stderr)
+            continue  # Skip malformed records
 
         if parts[0] == "User_Location":
             continue  # Skip user location records in this loop, they are already processed
 
-        if len(parts) < 6:
-            print(f"DEBUG: Skipping malformed record for user {key}: {value}", file=sys.stderr)
-            continue  # Skip malformed records
-
         recommended_friend = parts[0]
         count = int(parts[1])
         is_direct = int(parts[2])
-        location = parts[3]
-        weight = int(parts[4])
-        connected_date = parts[5]
+        weight = int(parts[3])
+        connected_date = parts[4]
 
-        print(f"DEBUG:   {recommended_friend} | mutual={count} | weight={weight} | direct={is_direct}| location={location} | connected_date={connected_date}",
-              file=sys.stderr)
+        user_locations[key] = user_locations.get(key, 'unknown')
+        user_locations[recommended_friend] = user_locations.get(recommended_friend, 'unknown')
+
+
+        print(
+            f"DEBUG:   {recommended_friend} | mutual={count} | weight={weight} | direct={is_direct}|  connected_date={connected_date}",
+            file=sys.stderr)
 
         if is_direct == 1:
             continue  # Skip direct friendships for recommendations
@@ -71,27 +79,34 @@ def process(key, values):
 
     for friend, score, weight, count in recommendations:
         friend_location = user_locations.get(friend, 'unknown')
-        print(f"DEBUG:   Friend {friend} location: {friend_location} | User location: {user_location}", file=sys.stderr)
+        print(f"DEBUG:   Friend {friend} location: {friend_location} | User  location: {user_location}", file=sys.stderr)
+      
         if SAME_LOCATION_ONLY:
             if friend_location == 'unknown' and user_location == 'unknown':
-                print(f"DEBUG:   Skipping {friend} for user {key} due to location mismatch (friend location: {friend_location}, user location: {user_location})", file=sys.stderr)
+                print(
+                    f"DEBUG:   Skipping {friend} for user {key} due to location mismatch (friend location: {friend_location}, user location: {user_location})",
+                    file=sys.stderr)
                 continue
             elif friend_location != user_location:
-                print(f"DEBUG:   Skipping {friend} for user {key} due to location mismatch (friend location: {friend_location}, user location: {user_location})", file=sys.stderr)
+                print(
+                    f"DEBUG:   Skipping {friend} for user {key} due to location mismatch (friend location: {friend_location}, user location: {user_location})",
+                    file=sys.stderr)
                 continue
 
-        final_recommendations.append((friend, score, weight, count ))  # Keep the original sort value, weight, and count for sorting
+        #final_recommendations.append((friend, score, weight, count ))  # Keep the original sort value, weight, and count for sorting
+        final_recommendations.append(
+            (friend, score))  # Keep the original sort value, weight, and count for sorting
 
     #recommendations = [rec for rec in recommendations if rec[0] != friend]  # Remove this friend from recommendations
 
     # Sort recommendations by count in descending order and then by recommended friend ID in ascending order
     final_recommendations.sort(key=lambda x: (-x[1], int(x[0])))
 
-    top = [f"{f}({score})" for f, score, w, c in recommendations[:10]]
+    top = [f"{f}({score})" for f, score in final_recommendations[:10]]
     print(f"DEBUG: Final top for {key}: {top}", file=sys.stderr)
 
-    recommended_friends = [friend for friend, _,_,_ in final_recommendations[:10]]  # Get top 10 recommended friends
-    output = ", ".join(recommended_friends) # ignore counts for output
+    top_10_recommended_friends = [friend for friend,score in final_recommendations[:10]]  # Get top 10 recommended friends
+    output = ", ".join(top_10_recommended_friends) # ignore counts for output
 
     print(f"{key}\t{output}")
 
