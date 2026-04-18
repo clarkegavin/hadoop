@@ -46,9 +46,9 @@ def process(key, values):
 for line in sys.stdin:
     key, value = line.strip().split('\t')
 
-    if value.startswith("User_Location"):
-        print(f"{key}\t{value}")  # Emit user location records as is for later processing
-        continue
+    # if value.startswith("User_Location"):
+    #     print(f"{key}\t{value}")  # Emit user location records as is for later processing
+    #     continue
 
     if current_key == key:
         values.append(value)

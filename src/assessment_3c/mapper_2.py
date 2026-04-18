@@ -10,12 +10,13 @@ SORT_BY_WEIGHT = os.environ.get('sort_by_weight', 'false').lower() == 'true'
 location_map = {}
 
 try:
-    with open("locations.txt", "r") as f:
+    with open("locations.txt") as f:
         for line in f:
             user, location = line.strip().split("\t")
             location_map[user] = location
 except Exception as e:
-    pass # If the file doesn't exist or can't be read, we just won't have location data
+    print(f"ERROR loading locations.txt: {e}", file=sys.stderr)
+    #pass # If the file doesn't exist or can't be read, we just won't have location data
 
 for line in sys.stdin:
 

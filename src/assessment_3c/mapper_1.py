@@ -44,7 +44,7 @@ for line in sys.stdin:
             continue
 
     # Emit User Location
-    print(f"{user_id}\tUser_Location,{location}")
+    #print(f"{user_id}\tUser_Location,{location}")
 
     # Direct friendships
     for friend_id, weight, connect_date in friend_data:
