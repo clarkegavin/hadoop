@@ -20,14 +20,17 @@ for line in sys.stdin:
 
     pair, data = line.strip().split("\t")
 
-    count_str, is_direct_str, weight, connected_date = [x.strip() for x in data.split(',')]
-    count = int(count_str)
-    is_direct = int(is_direct_str)
+    parts = [x.strip() for x in data.split(',')]
+    count = int(parts[0])
+    is_direct = int(parts[1])
+    weight = parts[2]
+    connected_date = parts[3]
+    bridges = parts[4] if len(parts) > 4 else ""
 
     user, recommended_friend = [x.strip() for x in pair.split(',')]
 
     user_location = location_map.get(user, 'unknown')
     friend_location = location_map.get(recommended_friend, 'unknown')
 
-    print(f"{user}\t{recommended_friend},{count},{is_direct},{weight},{connected_date},{user_location},{friend_location}")
-    print(f"{recommended_friend}\t{user},{count},{is_direct},{weight},{connected_date},{friend_location},{user_location}")
+    print(f"{user}\t{recommended_friend},{count},{is_direct},{weight},{connected_date},{user_location},{friend_location},{bridges}")
+    print(f"{recommended_friend}\t{user},{count},{is_direct},{weight},{connected_date},{friend_location},{user_location},{bridges}")
