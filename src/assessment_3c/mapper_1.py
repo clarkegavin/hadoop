@@ -16,7 +16,6 @@ def is_recent(date_str):
 
 for line in sys.stdin:
     friends = line.strip().split("\t")  # split by tab to handle cases where words are separated by tabs
-
     user_id = int(friends[0].strip())
     location = friends[1].strip()
     friend_list_raw = friends[2].split(',')
@@ -34,7 +33,7 @@ for line in sys.stdin:
             weight = int(weight.strip())
             connect_date = connect_date.strip()
 
-            # Apply temporal filter BEFORE storing
+            # Apply filter
             if CONNECTED_THIS_YEAR_ONLY and not is_recent(connect_date):
                 continue
 
@@ -43,24 +42,17 @@ for line in sys.stdin:
         except ValueError:
             continue
 
-    # Emit User Location
-    #print(f"{user_id}\tUser_Location,{location}")
 
     # Direct friendships
     for friend_id, weight, connect_date in friend_data:
-
-        #value = ("direct", None)
-        #print(f"{key[0]},{key[1]}\tdirect,0,{location},{weight},{connect_date}")
         print(f"{user_id},{friend_id}\tdirect,0,{weight},{connect_date}")
 
     # Mutual friendships
     for (friend1, w1,d1), (friend2, w2, d2)  in combinations(friend_data, 2):
         key = tuple(sorted((friend1, friend2)))
-        #value = ("mutual", user_id)  # user_id is the mutual friend
-        #print(f"{key[0]},{key[1]}\tmutual,{user_id},unknown,{weight},{connect_date}")
-        #print(f"{key[0]},{key[1]}\tmutual,{user_id},{weight},{connect_date}")
-        # use the weight of the mutual friend that is connected to the user_id as the weight for the mutual friendship
-        bridge_weight = w1 #if friend1 == user_id else w2
-        bridge_date = d1 # if friend1 == user_id else d2
-
+        bridge_weight = w1
+        bridge_date = d1
         print(f"{key[0]},{key[1]}\tmutual,{user_id},{bridge_weight},{bridge_date}")
+
+    # Dummy record to ensure we have a record for each user in the reducer for location data after filtering
+    print(f"{user_id},{user_id}\tdirect,0,0,unknown")
