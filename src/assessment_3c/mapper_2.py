@@ -27,3 +27,5 @@ for line in sys.stdin:
     # print(f"{recommended_friend}\t{user},{count},{is_direct},{location},{weight},{connected_date}")
     print(f"{user}\t{recommended_friend},{count},{is_direct},{weight},{connected_date}")
     print(f"{recommended_friend}\t{user},{count},{is_direct},{weight},{connected_date}")
+    # emitting user location for both user and recommended friend to ensure we have location data for both when processing recommendations
+    #print(f"{recommended_friend}\tUser_Location,{user}")

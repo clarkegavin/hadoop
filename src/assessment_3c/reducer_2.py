@@ -80,7 +80,7 @@ def process(key, values):
     for friend, score, weight, count in recommendations:
         friend_location = user_locations.get(friend, 'unknown')
         print(f"DEBUG:   Friend {friend} location: {friend_location} | User  location: {user_location}", file=sys.stderr)
-      
+
         if SAME_LOCATION_ONLY:
             if friend_location == 'unknown' and user_location == 'unknown':
                 print(
