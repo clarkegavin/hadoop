@@ -5,15 +5,25 @@ import os
 
 SAME_LOCATION_ONLY = os.environ.get('same_location_only', 'false').lower() == 'true'
 SORT_BY_WEIGHT = os.environ.get('sort_by_weight', 'false').lower() == 'true'
-CONNECTED_THIS_YEAR_ONLY = os.environ.get('connected_this_year_only', 'false').lower() == 'true'
+#CONNECTED_THIS_YEAR_ONLY = os.environ.get('connected_this_year_only', 'false').lower() == 'true'
+
+location_map = {}
+
+try:
+    with open("locations.txt", "r") as f:
+        for line in f:
+            user, location = line.strip().split("\t")
+            location_map[user] = location
+except Exception as e:
+    pass # If the file doesn't exist or can't be read, we just won't have location data
 
 for line in sys.stdin:
 
     pair, data = line.strip().split("\t")
 
-    if data.startswith("User_Location"):
-        print(line)  # Emit user location records as is for later processing
-        continue
+    # if data.startswith("User_Location"):
+    #     print(line)  # Emit user location records as is for later processing
+    #     continue
 
     #having some issues with spaces so stripping them just in case
     #count_str, is_direct_str, location, weight, connected_date = [x.strip() for x in data.split(',')]
@@ -23,9 +33,12 @@ for line in sys.stdin:
 
     user, recommended_friend = [x.strip() for x in pair.split(',')]
 
+    user_location = location_map.get(user, 'unknown')
+    friend_location = location_map.get(recommended_friend, 'unknown')
+
     # print(f"{user}\t{recommended_friend},{count},{is_direct},{location},{weight},{connected_date}")
     # print(f"{recommended_friend}\t{user},{count},{is_direct},{location},{weight},{connected_date}")
-    print(f"{user}\t{recommended_friend},{count},{is_direct},{weight},{connected_date}")
-    print(f"{recommended_friend}\t{user},{count},{is_direct},{weight},{connected_date}")
+    print(f"{user}\t{recommended_friend},{count},{is_direct},{weight},{connected_date},{user_location},{friend_location}")
+    print(f"{recommended_friend}\t{user},{count},{is_direct},{weight},{connected_date},{friend_location},{user_location}")
     # emitting user location for both user and recommended friend to ensure we have location data for both when processing recommendations
     #print(f"{recommended_friend}\tUser_Location,{user}")

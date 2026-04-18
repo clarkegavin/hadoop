@@ -2,7 +2,17 @@
 # mapper 1
 import sys
 from itertools import combinations
+import os
+from datetime import datetime, timedelta
 
+CONNECTED_THIS_YEAR_ONLY = os.environ.get('connected_this_year_only', 'false').lower() == 'true'
+
+def is_recent(date_str):
+    try:
+        d = datetime.strptime(date_str, '%Y-%m-%d')
+        return d >= datetime.now() - timedelta(days=365)
+    except:
+        return False
 
 for line in sys.stdin:
     friends = line.strip().split("\t")  # split by tab to handle cases where words are separated by tabs
@@ -19,9 +29,18 @@ for line in sys.stdin:
     for friend in friend_list_raw:
         try:
             friend_id, weight, connect_date = friend.split(':')
-            friend_data.append((int(friend_id), int(weight), connect_date))
+
+            friend_id = int(friend_id.strip())
+            weight = int(weight.strip())
+            connect_date = connect_date.strip()
+
+            # Apply temporal filter BEFORE storing
+            if CONNECTED_THIS_YEAR_ONLY and not is_recent(connect_date):
+                continue
+
+            friend_data.append((friend_id, weight, connect_date))
+
         except ValueError:
-            # Handle cases where the friend data is not in the expected format
             continue
 
     # Emit User Location
@@ -29,10 +48,10 @@ for line in sys.stdin:
 
     # Direct friendships
     for friend_id, weight, connect_date in friend_data:
-        key =  tuple((user_id, friend_id))
+
         #value = ("direct", None)
         #print(f"{key[0]},{key[1]}\tdirect,0,{location},{weight},{connect_date}")
-        print(f"{key[0]},{key[1]}\tdirect,0,{weight},{connect_date}")
+        print(f"{user_id},{friend_id}\tdirect,0,{weight},{connect_date}")
 
     # Mutual friendships
     for (friend1, w1,d1), (friend2, w2, d2)  in combinations(friend_data, 2):
@@ -41,7 +60,7 @@ for line in sys.stdin:
         #print(f"{key[0]},{key[1]}\tmutual,{user_id},unknown,{weight},{connect_date}")
         #print(f"{key[0]},{key[1]}\tmutual,{user_id},{weight},{connect_date}")
         # use the weight of the mutual friend that is connected to the user_id as the weight for the mutual friendship
-        bridge_weight = w1 if friend1 == user_id else w2
-        bridge_date = d1 if friend1 == user_id else d2
+        bridge_weight = w1 #if friend1 == user_id else w2
+        bridge_date = d1 # if friend1 == user_id else d2
 
         print(f"{key[0]},{key[1]}\tmutual,{user_id},{bridge_weight},{bridge_date}")
