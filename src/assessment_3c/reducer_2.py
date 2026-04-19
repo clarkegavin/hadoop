@@ -8,7 +8,7 @@ SORT_BY_WEIGHT = os.environ.get('sort_by_weight', 'false').lower() == 'true'
 
 current_key = None
 values = []
-#user_locations = {}
+
 
 def process(key, values):
     recommendations = []
@@ -20,7 +20,7 @@ def process(key, values):
         # stripping spaces
         parts = [x.strip() for x in value.split(',')]
 
-        if len(parts) < 6:
+        if len(parts) < 7:
             print(f"DEBUG: Skipping malformed record for user {key}: {value}", file=sys.stderr)
             continue  # Skip malformed records
 
@@ -31,6 +31,7 @@ def process(key, values):
         connected_date = parts[4]
         user_location = parts[5]
         friend_location = parts[6]
+        bridges = parts[7] if len(parts) > 7 else ""
 
         print(
             f"DEBUG:  Record for user {key}: recommended_friend={recommended_friend}, count={count}, is_direct={is_direct}, weight={weight}, connected_date={connected_date}, user_location={user_location}, friend_location={friend_location}",
@@ -53,16 +54,19 @@ def process(key, values):
                 continue
 
         sort_value = weight if SORT_BY_WEIGHT else count  # Use weight for sorting if SORT_BY_WEIGHT is True, otherwise use count
-        recommendations.append((recommended_friend, sort_value))
+        recommendations.append((recommended_friend, sort_value, bridges, count))
 
     # sort
     recommendations.sort(key=lambda x: (-x[1], int(x[0])))  # Sort by sort_value in descending order and then by recommended friend ID in ascending order
 
-    top = [friend for friend, score in recommendations[:10]]  # Get top 10 recommended friends
-    output = ", ".join(top)  # Join top recommended friends into a comma-separated string
+    output_parts = []
+    for friend, score, bridges, count in recommendations[:10]:  # Get top 10 recommendations
+        if bridges:
+            output_parts.append(f"{friend} (Mutual Friends: {bridges})")
+        else:
+            output_parts.append(f"{friend}")
 
-    print(f"DEBUG: Top recommendations for user {key}: {output}", file=sys.stderr)
-
+    output = "; ".join(output_parts)
     print(f"{key}\t{output}")
 
 for line in sys.stdin:

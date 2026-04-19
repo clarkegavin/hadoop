@@ -6,7 +6,7 @@ values = []
 
 def process(key, values):
     has_direct = False
-    mutual_friends = []
+    mutual_bridges = set() #store mutual friend id's
     best_weight = 0  # to track the best weight among mutual friends
     connect_date = 'unknown'  # default connect_date if not found
 
@@ -18,23 +18,30 @@ def process(key, values):
 
         if tag == "direct":
             has_direct = True
-        elif tag == "mutual":
-            mutual_friends.append(int(user_id))
+            if len(parts) > 3:
+                try:
+                    weight = int(parts[2].strip())
+                    if weight > best_weight:
+                        best_weight = weight
+                        connect_date = parts[3].strip()
+                except:
+                    pass
 
-        if len(parts) > 2:
+        elif tag == "mutual":
             try:
-                w = int(parts[2].strip())
-                if w > best_weight:
-                    best_weight = w
-                    print(f"DEBUG:     New best weight = {w}", file=sys.stderr)
-                else:
-                    print(f"DEBUG:     Weight {w} is not better than current best weight {best_weight}", file=sys.stderr)
+                bridge_user = int(parts[1].strip())  # the user who connects them
+                weight = int(parts[2].strip())
+                mutual_bridges.add(bridge_user)
+                if weight > best_weight:
+                    best_weight = weight
+                    connect_date = parts[3].strip()
             except:
-                pass  # ignore if weight is not an integer
+                pass
 
     is_direct_flag = 1 if has_direct else 0
-    print(f"DEBUG: Final for {key}: mutual={len(mutual_friends)}, best_weight={best_weight}", file=sys.stderr)
-    print(f"{key}\t{len(mutual_friends)},{is_direct_flag},{best_weight},{connect_date}")
+    bridges_str = ",".join(map(str, sorted(mutual_bridges))) if mutual_bridges else ""
+
+    print(f"{key}\t{len(mutual_bridges)},{is_direct_flag},{best_weight},{connect_date},{bridges_str}")
 
 for line in sys.stdin:
     key, value = line.strip().split('\t')
